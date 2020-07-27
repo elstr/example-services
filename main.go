@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	services "github.com/elstr/grpc-example"
-	"github.com/elstr/grpc-example/dialer"
-	"github.com/elstr/grpc-example/trace"
+	services "github.com/elstr/example-services"
+	"github.com/elstr/example-services/dialer"
+	"github.com/elstr/example-services/trace"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"log"

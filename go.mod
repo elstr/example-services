@@ -14,4 +14,4 @@ require (
 	google.golang.org/protobuf v1.25.0
 )
 
-module github.com/elstr/grpc-example
+module github.com/elstr/example-services

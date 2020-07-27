@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	delivery "github.com/elstr/grpc-example/proto/delivery"
-	stock "github.com/elstr/grpc-example/proto/stock"
+	delivery "github.com/elstr/example-services/proto/delivery"
+	stock "github.com/elstr/example-services/proto/stock"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	opentracing "github.com/opentracing/opentracing-go"
 	context "golang.org/x/net/context"

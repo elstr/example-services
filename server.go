@@ -3,8 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	stock "github.com/elstr/grpc-example/proto/stock"
-	"github.com/elstr/grpc-example/trace"
+	stock "github.com/elstr/example-services/proto/stock"
+	"github.com/elstr/example-services/trace"
 	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"net/http"
