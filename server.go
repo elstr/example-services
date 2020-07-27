@@ -1,35 +1,54 @@
-package main
+package services
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
+	stock "github.com/elstr/grpc-example/proto/stock"
+	"github.com/elstr/grpc-example/trace"
+	opentracing "github.com/opentracing/opentracing-go"
+	"google.golang.org/grpc"
 	"net/http"
 )
 
-// POST /buy/ donde el payload es: {'id':1, 'cant':1} y la respuesta es: {'date':'31-07-2020'} dt.now + 5
+// TODO: Better naming.. server is :S
 
-func main() {
+// Server struct that contains the stock service client to be called
+type Server struct {
+	stockClient stock.StockClient
+	tracer      opentracing.Tracer
+}
 
-	type Item struct {
-		ID       int     `json:"id"`
-		Price    float32 `json:"price"`
-		Quantity int     `json:"quantity"`
-		Date     string  `json:"delivery_date"`
+// Item represents a product with a stock
+type Item struct {
+	ID       int32 `json:"id"`
+	Quantity int32 `json:"quantity"`
+}
+
+// NewServer returns a new server
+func NewServer(t opentracing.Tracer, stockconn *grpc.ClientConn) *Server {
+	return &Server{
+		stockClient: stock.NewStockClient(stockconn),
+		tracer:      t,
 	}
+}
 
-	http.HandleFunc("/buy/", func(w http.ResponseWriter, r *http.Request) {
-		item := Item{}
-		// 1. llamar a stock service y restarle 1 al id 1
-		// 2. desde stock service llamar a delivery service y que segun la cantidad me devuelva la delivery date
-		// 3. acá sólo debería devolver la delivery date
-		if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
+// Run the server
+func (s *Server) Run(port int) error {
+	mux := trace.NewServeMux(s.tracer)
+	mux.Handle("/buy", http.HandlerFunc(s.buyHandler))
+
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
+}
+
+func (s *Server) buyHandler(w http.ResponseWriter, r *http.Request) {
+	reqData := Item{}
+	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	ctx := r.Context()
+	s.stockClient.UpdateStock(ctx, &stock.Request{
+		Item:     reqData.ID,
+		Quantity: reqData.Quantity,
 	})
-
-	log.Print("Listening :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-
 }
