@@ -10,6 +10,8 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"log"
+	"strconv"
 )
 
 // Stock Server implements the stock service
@@ -55,5 +57,10 @@ func (s *Stock) UpdateStock(ctx context.Context, req *stock.Request) (*stock.Res
 	// 2. discount stock
 	// 3. call delivery service and get delivery date
 	// 4. return delivery date as stock.Response
-	return nil, nil
+
+	q := req.GetQuantity()
+	log.Println("UpdateStock - Quantity: " + strconv.Itoa(int(q)))
+
+	deliveryRes, err := s.deliveryClient.GetDeliveryDate(ctx, &delivery.Request{Quantity: q})
+	return &stock.Response{DeliveryDate: deliveryRes.GetDeliveryDate()}, err
 }

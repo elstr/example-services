@@ -7,6 +7,7 @@ import (
 	"github.com/elstr/example-services/trace"
 	opentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"log"
 	"net/http"
 )
 
@@ -42,13 +43,28 @@ func (s *Server) Run(port int) error {
 
 func (s *Server) buyHandler(w http.ResponseWriter, r *http.Request) {
 	reqData := Item{}
+
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	log.Printf("buyHandler - req data: %+v", &reqData)
 	ctx := r.Context()
-	s.stockClient.UpdateStock(ctx, &stock.Request{
+	res, err := s.stockClient.UpdateStock(ctx, &stock.Request{
 		Item:     reqData.ID,
 		Quantity: reqData.Quantity,
 	})
+
+	log.Println(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

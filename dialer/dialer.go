@@ -18,7 +18,7 @@ func WithTracer(t opentracing.Tracer) DialOption {
 	}
 }
 
-// Dial returns a load balanced grpc client conn with tracing interceptor
+// Dial returns a grpc client conn with tracing interceptor
 func Dial(name string, opts ...DialOption) (*grpc.ClientConn, error) {
 	dialopts := []grpc.DialOption{
 		grpc.WithInsecure(),

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	services "github.com/elstr/example-services"
 	"github.com/elstr/example-services/dialer"
+	"github.com/elstr/example-services/services"
 	"github.com/elstr/example-services/trace"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
@@ -35,6 +35,13 @@ func main() {
 
 	// this will be called with docker-compose
 	switch os.Args[1] {
+	case "server":
+		// To call service methods, we first need to create a gRPC channel to communicate with the service.
+		// We create the channel by passing the service address and port number to grpc.Dial()
+		srv = services.NewServer(
+			tracer,
+			initGRPCConn(*stockaddr, tracer),
+		)
 	case "delivery":
 		srv = services.NewDelivery(tracer)
 	case "stock":
@@ -42,19 +49,17 @@ func main() {
 			tracer,
 			initGRPCConn(*deliveryaddr, tracer),
 		)
-	case "server":
-		srv = services.NewServer(
-			tracer,
-			initGRPCConn(*stockaddr, tracer),
-		)
+
 	default:
 		log.Fatalf("unknown command %s", os.Args[1])
 	}
 
+	log.Println("Running - " + os.Args[1])
 	srv.Run(*port)
 }
 
 func initGRPCConn(addr string, tracer opentracing.Tracer) *grpc.ClientConn {
+	// Dial receives the address + dial options (TLS, GCE credentials, JWT credentials, tracer, etc)
 	conn, err := dialer.Dial(addr, dialer.WithTracer(tracer))
 	if err != nil {
 		panic(fmt.Sprintf("ERROR: dial error: %v", err))

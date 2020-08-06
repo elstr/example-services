@@ -2,17 +2,19 @@ syntax = "proto3";
 
 package delivery;
 
+// Depending on the quantity we calculate the delivery date
+message Request {
+  int32 quantity = 1;
+}
+
+// The fake delivery date 
+message Response {
+  string delivery_date = 1;
+}
+
+
 service Delivery {
   // Updates stock quantity
   rpc GetDeliveryDate(Request) returns (Response);
 }
 
-// Depending on the quantity we calculate the delivery date
-message Request {
-    int32 quantity = 1;
-}
-
-// The fake delivery date 
-message Response {
-    string delivery_date = 1;
-}
